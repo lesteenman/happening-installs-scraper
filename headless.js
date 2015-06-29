@@ -2,13 +2,16 @@ var page = require('webpage').create();
 var devtools = require('webpage').create();
 var fs = require('fs');
 
-// page.onConsoleMessage = function(msg) {
-//     console.log(msg.length, msg);
-// };
+/**
+ * Sample headless configuration file has been included. Required settings:
+ * login_token: The token that's set in localStorage.token on a logged in session
+ * my_plugins_page_id: The id of your 'my plugins' page on Happening
+ * plugin_id: The id of the plugin you want to scrape installs for
+ */
 
-// console.log('UserAgent', page.settings.userAgent);
+config = JSON.parse(fs.read('headless_conf.json'));
+
 page.settings.userAgent = 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.61 Safari/537.36';
-// console.log('UserAgent', page.settings.userAgent);
 
 var error = '';
 
@@ -53,16 +56,10 @@ page.onLoadFinished = function(status) {
             var isSignup = !document.getElementsByClassName('ui-avatar');
             if (isSignup) {
                 console.log('Was not yet logged in.... :(');
-                        localStorage.token = '6874-fpeaKIq8s190jFgO6ubrvffj3T4_';
-                        // Comet.rpc('Client.auth', '6874-fpeaKIq8s190jFgO6ubrvffj3T4_', {
-                        //     'agent': "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.61 Safari/537.36",
-                        //     'lang': 'nl'
-                        // }, function(response) {
-                        //     console.log("GOT A RESPONSE", response);
-                        // });
+                        localStorage.token = config.login_token;
                         return false;
                         } else {
-                            console.log('Was already logged in!!! :D');
+                            console.log('Was already logged in.');
                             return true;
                         }
                         });
@@ -73,7 +70,7 @@ page.onLoadFinished = function(status) {
                     phantom.exit();
                 } else {
                     console.log('Succesfully logged in');
-                    devtools.open('https://happening.im/159/settings/r/devtools');
+                    devtools.open('https://happening.im/'+config.my_plugins_page_id+'/settings/'+config.plugin_id+'/devtools');
                     page.close();
                 }
     }, 5000);
