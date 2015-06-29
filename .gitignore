@@ -1,0 +1,9 @@
+*.swp
+log
+pid
+errors
+numinstalls
+pin_subscriptions
+node_modules/pebble-api
+headless_conf.json
+error.txt
