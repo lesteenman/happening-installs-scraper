@@ -144,7 +144,9 @@ exports.current = (res) ->
                 newest_time = +d[0]
                 newest_data = +d[1]
 
-        res.end ''+newest_data
+        res.end JSON.stringify
+            time: newest_time
+            count: newest_data
 
 exports.error = (res) ->
     fs.readFile 'errors', 'utf8', (err, data) ->
