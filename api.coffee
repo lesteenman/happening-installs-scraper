@@ -67,9 +67,16 @@ exports.pin_subscribe = (res, token) ->
 
         exports.pins()
 
-sendpins = ->
+sendpin = (pin) ->
     timeline = new Timeline()
+    fs.readFile 'pin_subscriptions', 'utf8', (err, data) ->
+        subscriptions = data.split '\n'
+        for s in subscriptions
+            if s
+                timeline.sendUserPin s, pin, (err, body, resp) ->
+                    console.log 'Result: ', resp.statusCode
 
+sendpins = ->
     predictions = predict()
     i = 0
     for t, c of predictions
@@ -81,15 +88,31 @@ sendpins = ->
                 type: Timeline.Pin.LayoutType.GENERIC_PIN
                 tinyIcon: Timeline.Pin.Icon.PIN
                 title: 'Expected: ' + c
-                body: c + 'Expected installs for Happening against Humanity'
+                body: c + ' expected installs for Happening against Humanity'
+        sendpin pin
 
-        fs.readFile 'pin_subscriptions', 'utf8', (err, data) ->
-            subscriptions = data.split '\n'
-            for s in subscriptions
-                if s
-                    console.log 'Sending', id, 'to', s
-                    timeline.sendUserPin s, pin, (err, body, resp) ->
-                        console.log 'Result: ', resp.statusCode
+    fs.readFile 'numinstalls', 'utf8', (err, data) ->
+        newest_time = -1
+        newest_data = 0
+        for l in data.split '\n'
+            if not l
+                continue
+
+            d = l.split ' '
+            if +d[0] > newest_time or newest_time < 0
+                newest_time = +d[0]
+                newest_data = +d[1]
+
+        pin = new Timeline.Pin
+            id: 'past_0'
+            time: new Date(newest_time)
+            layout:
+                type: Timeline.Pin.LayoutType.GENERIC_PIN
+                tinyIcon: Timeline.Pin.Icon.PIN
+                title: newest_data + ' installs'
+                body: newest_data + ' installs for Happening against Humanity'
+
+        sendpin pin
 
 exports.pins = (res) ->
     sendpins()
